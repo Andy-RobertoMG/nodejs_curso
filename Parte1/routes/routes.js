@@ -1,7 +1,7 @@
 import express from "express"
 const router = express.Router();
 
-router.get("/holas",(req,res)=>{
+router.get("/login",(req,res)=>{
   res.json({msg:"hola"});
 })
 router.get("/dos",(req,res)=>{
