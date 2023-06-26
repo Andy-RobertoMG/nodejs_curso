@@ -4,13 +4,13 @@ dotenv.config({path:'.env'});
 const generarId = () => Date.now().toString()+ Math.random().toString(32);
 const emailRegistro = async (datos)=>{
   const transport = nodemailer.createTransport({
-    host:"sandbox.smtp.mailtrap.io",
-    port: 25,
+    host:process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT,
     secure:false,
     tls:{ciphers:'SSLv3'},
     auth:{
-      user: "7372284ccff42b",
-      pass: "af4cce28cab13f"
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS
     }
     
   })//Tuve que agregar secure:false y tls: ciphers para que funcionara
