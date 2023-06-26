@@ -13,7 +13,7 @@ const emailRegistro = async (datos)=>{
       pass: process.env.MAIL_PASS
     }
     
-  })//Tuve que agregar secure:false y tls: ciphers para que funcionara
+  })//Tuve que agregar secure:false y tls: ciphers para que funcionaras
   const {email,nombre,token} = datos;
   const resultado = await transport.sendMail({
     from:"Bienesraices.com",
