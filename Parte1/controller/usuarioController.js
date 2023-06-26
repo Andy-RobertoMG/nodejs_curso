@@ -2,6 +2,7 @@ import Usuarios from "../models/Usuarios.js";
 import pkg from "express-validator";
 import { generarId } from "../helpers/tokens.js";
 import { emailRegistro } from "../helpers/tokens.js"; 
+// import Usuario from './../models/Usuarios';
 const {check,validationResult} = pkg;
 const formularioLogin = (req,res)=>{
   try{
@@ -81,6 +82,29 @@ const registrando = async(req,res)=>{
   // console.log(resultado);
   // console.log(mensaje);
 }
+const confirmar = async (req,res)=>{
+  const {token} = req.params;
+  const usuario = await Usuarios.findOne({where:{token}});
+  console.log(usuario);
+  if(!usuario){
+    return res.render('auth/confirmar_cuenta',{
+      pagina:"Error al confirmar tu cuenta",
+      mensaje: 'Hubo un error al confirmar tu cuenta, intenta de nuevo',
+      error:true
+    })
+  }
+  //Confirmar cuenta
+  usuario.token=null;
+  usuario.confirmado = true;
+  await usuario.save();
+
+  res.render('auth/confirmar_cuenta',{
+    pagina:'Cuenta confirmada',
+    mensaje:'La cuenta se confirmo correctamente',
+    error:false,
+  })
+
+}
 const ReedAll = async(req,res)=>{
   const mensaje = await Usuarios.findAll();
   res.render('lista',{})
@@ -98,4 +122,4 @@ const mensaje = (req,res)=>{
   res.render('template/mensaje',{
   })
 }
-export {mensaje,formularioLogin,formularioRegistro,loginpasswordrecovery,registrando}
+export {confirmar,mensaje,formularioLogin,formularioRegistro,loginpasswordrecovery,registrando}
