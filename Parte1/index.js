@@ -5,9 +5,12 @@ import connectLivereload from "connect-livereload";
 import path from "path";
 import db from './config/db.js'
 const app = express()
+//Habilida lectura de datos de formulario 
+app.use(express.urlencoded({extended:true}));
 try{
   await db.authenticate();
-  console.log("Coneccion correcta");
+  db.sync()
+  // console.log("Coneccion correcta");
 }catch(error){
   console.log(error);
 }
@@ -17,7 +20,7 @@ liveReloadServer.watch(publicDirectory);
 liveReloadServer.server.once("connection",()=>{
   setTimeout(()=>{
     liveReloadServer.refresh("/")
-    console.log("funciona123")
+    // console.log("funciona123")
   },100)
 })
 app.set("views",'./views');

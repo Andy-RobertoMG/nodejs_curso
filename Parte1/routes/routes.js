@@ -1,5 +1,5 @@
 import express from "express"
-import {formularioLogin,formularioRegistro,loginpasswordrecovery} from '../controller/usuarioController.js'
+import {formularioLogin,formularioRegistro,loginpasswordrecovery, mensaje, registrando} from '../controller/usuarioController.js'
 const router = express.Router();
 
 router.get("/login",formularioLogin);
@@ -8,4 +8,6 @@ router.get("/login2",(req,res)=>{
 });
 router.get('/recovery',loginpasswordrecovery);
 router.get("/registro",formularioRegistro)
+router.post("/registro",registrando);
+router.get("/mensaje",mensaje)
 export default router;
