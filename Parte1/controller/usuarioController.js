@@ -16,6 +16,9 @@ const formularioLogin = (req,res)=>{
   
   // res.send("hola")
 };
+/*
+Funcion cuando se registra por primera vez
+*/
 const formularioRegistro = async(req,res)=>{
   Promise.allSettled(
     [fetch('https://randomuser.me/api/').then(response=>response.json())
@@ -29,16 +32,23 @@ const formularioRegistro = async(req,res)=>{
             pagina:'Crear Cuenta',
             nombre:username||"Andy Roberto Mesta Gonzalez",
             password:password||"1231231",
-            email
+            email,
+            csrfToken: req.csrfToken()//Esta hecho para comprobar que la persona que se registrando lo esta haciendo desde la pagina
           })
   }))
   
 };
 const loginpasswordrecovery = (req,res)=>{
   res.render('auth/recovery',{
-    pagina:'Recuperar Contraseña'
+    pagina:'Recuperar Contraseña',
+    csrfToken: req.csrfToken(),
   })
 }
+/**
+ * Funcion de post cuando el usuario se esta registrando, si se registra correctamente lo manda a una pagina de que se ha creado,
+ * si tiene algun error lo manda a la pagina inicial de registro con los datos para escribirlos correctamente
+ * si ya existe manda un mensaje que el usuario ya existe
+ */
 const registrando = async(req,res)=>{
   await Promise.allSettled([check('nombre').notEmpty().withMessage("Esta vacio").run(req),check('email').notEmpty().isEmail().withMessage("Esta mal escrito el correo").run(req)
   ,check('password').notEmpty().isLength(6).withMessage("No cumple el minimo numero de valores").run(req)
@@ -54,7 +64,8 @@ const registrando = async(req,res)=>{
           errores:resultado.array(),
           nombre,
           email,
-          password
+          csrfToken: req.csrfToken(),//Esta hecho para comprobar que la persona que se registrando lo esta haciendo desde la pagina
+          password,
         })
         return
       }
@@ -62,6 +73,7 @@ const registrando = async(req,res)=>{
       if(existeUsuario){
         res.render('auth/registro',{
           pagina:'Crear Cuenta',
+          csrfToken: req.csrfToken(),//Esta hecho para comprobar que la persona que se registrando lo esta haciendo desde la pagina
           errores:[{msg:'Ya existe un usuario con el correo ingresado'}]
         })
         return
@@ -81,6 +93,21 @@ const registrando = async(req,res)=>{
 
   // console.log(resultado);
   // console.log(mensaje);
+}
+const resetPassword = async (req,res)=>{
+  await check('email').isEmail().withMessage('Eso no parece un email').run(req);
+  console.log("no funciona")
+  let resultado = validationResult(req);
+  console.log(resultado)
+  //Verificar que el resultado este vacio
+  if(!resultado.isEmpty()){
+    return res.render('auth/recovery',{
+      pagina:'Recupera tu acceso a Bienes Raices',
+      csrfToken: req.csrfToken(),
+      errores: resultado.array(),
+    }
+    )
+  }
 }
 const confirmar = async (req,res)=>{
   const {token} = req.params;
@@ -122,4 +149,5 @@ const mensaje = (req,res)=>{
   res.render('template/mensaje',{
   })
 }
-export {confirmar,mensaje,formularioLogin,formularioRegistro,loginpasswordrecovery,registrando}
+
+export {confirmar,mensaje,formularioLogin,formularioRegistro,resetPassword,loginpasswordrecovery,registrando}

@@ -4,9 +4,15 @@ import livereload from "livereload";
 import connectLivereload from "connect-livereload";
 import path from "path";
 import db from './config/db.js'
+import csurf from "csurf";
+import cookieParser from 'cookie-parser'
 const app = express()
 //Habilida lectura de datos de formulario 
 app.use(express.urlencoded({extended:true}));
+//Habilitar cookie parser 
+app.use(cookieParser())
+//Habilita la utilizacion de cookies
+app.use(csurf({cookie:true}))//Con esto el request no viene desde la terminal o desde otra aplicacion sino desde nuestro dominio
 try{
   await db.authenticate();
   db.sync()
