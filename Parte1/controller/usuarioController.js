@@ -1,7 +1,9 @@
 import Usuarios from "../models/Usuarios.js";
 import pkg from "express-validator";
-import { generarId } from "../helpers/tokens.js";
+import { emailRecuperar, generarId } from "../helpers/tokens.js";
 import { emailRegistro } from "../helpers/tokens.js"; 
+import { where } from "sequelize";
+import bcrypt from 'bcrypt'
 // import Usuario from './../models/Usuarios';
 const {check,validationResult} = pkg;
 const formularioLogin = (req,res)=>{
@@ -108,7 +110,76 @@ const resetPassword = async (req,res)=>{
     }
     )
   }
+  const {email} = req.body;
+  const usuario = await Usuarios.findOne({where:{email}});
+  console.log("Usuario",usuario)
+  if(!usuario)
+  {
+    return res.render('auth/recovery',{
+      pagina:'Recupera tu acceso a Bienes Raices',
+      csrfToken: req.csrfToken(),
+      errores: resultado.array(),
+    }
+    )
+  }
+  usuario.token = generarId();
+  await usuario.save();
+  console.log("Nuevo texto")
+  emailRecuperar({//Envia el correo al usuario para que este vaya a ingresar la contraseña
+    email,
+    nombre: usuario.nombre,
+    token: usuario.token
+  })
+  //Mostrar mensaje de confirmacion
+  res.render('templates/mensaje',{
+    pagina:'Reestablece tu Passwordf',
+    mensaje:'Hemos enviado un email con las instrucciones'
+  })
 }
+const newPass = async (req,res)=>{
+    await check('password').notEmpty().isLength(6).withMessage("No cumple el minimo numero de valores").run(req)
+    let resultado = validationResult(req);
+    if(!resultado.isEmpty()){
+      return res.render('auth/reset-password',{
+        pagina:'Reestablece tu password',
+        csrfToken: req.csrfToken(),
+        errores: resultado.array(),
+
+      })
+    }
+    const {token} = req.params;
+    const {password} = req.body;
+    const usuario = await Usuarios.findOne({where:{token}});
+    const salt = await bcrypt.genSalt(10);
+    usuario.password = await bcrypt.hash(password,salt);
+    usuario.token=null;
+    await usuario.save();
+    res.render('auth/confirmar_cuenta',{
+      pagina:'Password reestablecido',
+      mensaje:'El passwords se ha cambiado con exito'
+    })
+}
+const comprobarToken = async(req,res) =>{
+  const {token} =req.params;
+  const usuario = await Usuarios.findOne({where:{token}});
+  console.log("comprobartoken")
+  console.log(usuario);
+  if(!usuario){
+    return res.render('auth/confirmar_cuenta',
+    {
+      pagina:'Reestablece tu Password',
+      mensaje:'Hubo un error al validr tu información,intenta de nuevo',
+      error:true
+    })
+
+  }
+  res.render('auth/reset-password',{
+    pagina:'Reestablece tu password',
+    csrfToken: req.csrfToken()
+  })
+
+}
+
 const confirmar = async (req,res)=>{
   const {token} = req.params;
   const usuario = await Usuarios.findOne({where:{token}});
@@ -150,4 +221,4 @@ const mensaje = (req,res)=>{
   })
 }
 
-export {confirmar,mensaje,formularioLogin,formularioRegistro,resetPassword,loginpasswordrecovery,registrando}
+export {newPass,confirmar,mensaje,formularioLogin,formularioRegistro,resetPassword,loginpasswordrecovery,registrando,comprobarToken}

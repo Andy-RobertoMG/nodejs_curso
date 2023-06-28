@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
-import dotenv from 'dotenv'
-dotenv.config({path:'.env'});
+// import dotenv from 'dotenv'
+// dotenv.config({path:'.env'});
 const generarId = () => Date.now().toString()+ Math.random().toString(32);
 const emailRegistro = async (datos)=>{
   const transport = nodemailer.createTransport({
@@ -29,4 +29,33 @@ const emailRegistro = async (datos)=>{
   })
   // console.log(resultado);
 }
-export {generarId,emailRegistro};
+const emailRecuperar = async (datos)=>{
+  const transport = nodemailer.createTransport({
+    host:process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT,
+    secure:false,
+    tls:{ciphers:'SSLv3'},
+    auth:{
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS
+    }
+    
+  })//Tuve que agregar secure:false y tls: ciphers para que funcionaras
+
+  const {email,nombre,token} = datos;
+  console.log("Prueba de datos:",datos);
+  const resultado = await transport.sendMail({
+    from:"Bienesraices.com",
+    to:email,
+    subject:'Reestablece tu Password en BienesRaices.com',
+    text:'Reestablece tu Password en BienesRaices.com',
+    html:`
+          <p>Hola ${nombre}, has solicitado reestablecer tu password en bienesRaices.com</p>
+          <p> Sigue el siguiente enlace para generar un password nuevo:
+          <a href="${process.env.BACKEND_URL}:${process.env.PORT||3000}/auth/recovery/${token}">Confirmar Cuenta </p>
+          <p> Si tu no solicitaste el cambio de password , puedes ignorar el mensaje</p>
+    `
+  })
+  // console.log(resultado);
+}
+export {generarId,emailRegistro,emailRecuperar};
